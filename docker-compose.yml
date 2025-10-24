@@ -1,0 +1,10 @@
+services:
+  app:
+    build: .
+    volumes:
+      - ${PWD}:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+    tty: true
