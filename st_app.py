@@ -1,4 +1,6 @@
 import os
+import re
+import html
 
 import streamlit as st
 from dotenv import load_dotenv
@@ -43,6 +45,39 @@ def render_history() -> None:
         speaker = "あなた" if message["role"] == "user" else "AI"
         st.markdown(f"**{speaker}:** {message['content']}")
 
+def sanitize_input(text):
+    """ユーザー入力のサニタイズ"""
+    # 制御文字の削除
+    text = re.sub(r'[\x00-\x1F\x7F]', '', text)
+    # HTMLエスケープ
+    text = html.escape(text)
+    return text
+
+def validate_input(text):
+    """入力の検証"""
+    # 空白や短すぎる入力をチェック
+    if not text or len(text.strip()) < 2:
+        return False, "メッセージが短すぎます"
+    
+    # 長すぎる入力をチェック
+    if len(text) > 1000:
+        return False, "メッセージが長すぎます（1000文字以内）"
+    
+    # 不適切なパターンをチェック
+    forbidden_patterns = [
+        r'system:\s*',
+        r'assistant:\s*',
+        r'human:\s*',
+        r'<\w+>',  # XMLタグのような構造
+        r'\{\{.*\}\}',  # テンプレート構文
+        r'`.*`',  # コードブロック
+    ]
+    
+    for pattern in forbidden_patterns:
+        if re.search(pattern, text, re.IGNORECASE):
+            return False, "不正な入力パターンが含まれています"
+    
+    return True, ""
 
 def main() -> None:
     st.title("My Streamlit App")
@@ -50,10 +85,9 @@ def main() -> None:
 
     if "message_history" not in st.session_state:
         st.session_state.message_history = []
-
-
+        
     user_input = st.text_area("メッセージを入力してください", max_chars=1000)
-
+    
     chat_prompt = ChatPromptTemplate.from_messages(
         [
             SystemMessagePromptTemplate.from_template(system_prompt),
@@ -70,6 +104,15 @@ def main() -> None:
         if not user_input.strip():
             st.warning("メッセージを入力してください。")
             return
+        
+        # 入力の検証
+        is_valid, error_message = validate_input(user_input)
+        if not is_valid:
+            st.error(error_message)
+            st.stop()
+
+        # 入力のサニタイズ
+        user_input = sanitize_input(user_input)
 
         with st.spinner("生成中..."):
             response_text = chain.predict(user_input=user_input)
