@@ -1,7 +1,6 @@
 import os
 import re
 import html
-
 import streamlit as st
 from dotenv import load_dotenv
 from langchain.chains import LLMChain
@@ -24,7 +23,7 @@ os.environ["GOOGLE_API_KEY"] = api_key
 
 system_prompt = """
 # 役割
-あなたは安全で役立つアシスタントです。
+あなたは安全でユーザーの役に立つスーパーアシスタントです。
 
 # 制約条件
 以下の制約に従って応答してください：
@@ -45,7 +44,7 @@ system_prompt = """
 def init_page() -> None:
     st.set_page_config(
         page_title="My Streamlit App",
-        page_icon="🤖",
+        page_icon="",
         layout="centered",
         initial_sidebar_state="auto",
     )
