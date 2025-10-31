@@ -1,0 +1,11 @@
+.git
+*.csv
+*.parquet
+.env
+__pycache__/
+.vscode/
+.venv/
+data/
+notebooks/
+.gitignore
+README.md
