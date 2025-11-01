@@ -56,7 +56,7 @@ def init_messages() -> None:
     if clear_button or "message_history" not in st.session_state:
         st.session_state.message_history = []
 
-def select_model() -> None:
+def select_model() -> ChatGoogleGenerativeAI:
     temptature = st.sidebar.slider(
         "Temperature", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
     
@@ -75,7 +75,7 @@ def select_model() -> None:
             temperature=temptature,
         )
 
-def init_chain():
+def init_chain() -> LLMChain:
     st.session_state.llm = select_model()
     chat_prompt = ChatPromptTemplate.from_messages(
         [
@@ -97,7 +97,7 @@ def render_history() -> None:
         speaker = "user" if message["role"] == "user" else "AI"
         st.chat_message(speaker).markdown(message["content"])
 
-def sanitize_input(text):
+def sanitize_input(text: str) -> str:
     """ユーザー入力のサニタイズ"""
     # 制御文字の削除
     text = re.sub(r'[\x00-\x1F\x7F]', '', text)
@@ -105,7 +105,7 @@ def sanitize_input(text):
     text = html.escape(text)
     return text
 
-def validate_input(text):
+def validate_input(text: str) -> tuple[bool, str]:
     """入力の検証"""
     # 空白や短すぎる入力をチェック
     if not text or len(text.strip()) < 2:
@@ -132,7 +132,11 @@ def validate_input(text):
     return True, ""
 
 
-def stream_text_only(chain, user_input, chunk_collector):
+def stream_text_only(
+        chain: LLMChain, 
+        user_input: str, 
+        chunk_collector: list[str]
+    ):
     for chunk in chain.stream({"user_input": user_input}):
         if isinstance(chunk, dict):
             text = chunk.get("text", "")
