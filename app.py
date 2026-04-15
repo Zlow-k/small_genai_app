@@ -19,7 +19,6 @@ if not api_key:
     st.error("GOOGLE_API_KEYが設定されていません。.envファイルを確認してください。")
     st.stop()
 
-os.environ["GOOGLE_API_KEY"] = api_key
 
 system_prompt = """
 # 役割
